@@ -1,11 +1,8 @@
+"use client";
+
+import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Market } from '@/types/trading';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 interface MarketBarProps {
   markets: Market[];
@@ -14,72 +11,72 @@ interface MarketBarProps {
 }
 
 export function MarketBar({ markets, selectedMarket, onSelectMarket }: MarketBarProps) {
-  const isPositive = selectedMarket.change24h >= 0;
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="flex items-center gap-6 px-6 py-4 border-b border-border bg-background">
+    <div className="flex items-center gap-8 px-4 py-3 border-b border-[#1f1f1f] bg-[#0a0a0a]">
       {/* Market Selector */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <span className="text-xl font-semibold">{selectedMarket.symbol}</span>
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56 bg-popover border-border">
-          {markets.map((market) => (
-            <DropdownMenuItem
-              key={market.id}
-              onClick={() => onSelectMarket(market)}
-              className={`flex items-center justify-between cursor-pointer ${
-                market.id === selectedMarket.id ? 'bg-muted' : ''
-              }`}
-            >
-              <span className="font-medium">{market.symbol}</span>
-              <span className={`text-sm font-mono ${market.change24h >= 0 ? 'text-long' : 'text-short'}`}>
-                {market.change24h >= 0 ? '+' : ''}{market.change24h.toFixed(2)}%
-              </span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <div className="h-8 w-px bg-border" />
-
-      {/* Mark Price */}
-      <div className="flex items-center gap-3">
-        <span className="text-xl font-mono font-semibold">
-          ${selectedMarket.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </span>
-        <span className={`text-sm font-mono ${isPositive ? 'text-long' : 'text-short'}`}>
-          {isPositive ? '+' : ''}{selectedMarket.change24h.toFixed(2)}%
-        </span>
+      <div className="relative">
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
+          <div className="w-2 h-2 rounded-full bg-[#f97316]" />
+          <span className="text-sm font-medium">{selectedMarket.symbol}</span>
+          <ChevronDown className="w-3 h-3 text-[#6b7280]" />
+        </button>
+        
+        {isOpen && (
+          <div className="absolute top-full left-0 mt-1 bg-[#111] border border-[#222] z-50 min-w-[200px]">
+            {markets.map((market) => (
+              <button
+                key={market.id}
+                onClick={() => {
+                  onSelectMarket(market);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2 hover:bg-[#1a1a1a] text-sm ${
+                  market.id === selectedMarket.id ? 'bg-[#1a1a1a]' : ''
+                }`}
+              >
+                <span>{market.symbol}</span>
+                <span className={market.change24h >= 0 ? 'text-[#00ff00]' : 'text-[#ff4444]'}>
+                  {market.change24h >= 0 ? '+' : ''}{market.change24h.toFixed(2)}%
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="h-8 w-px bg-border" />
-
-      {/* Funding Rate */}
+      {/* Current Price */}
       <div className="flex flex-col">
-        <span className="label-uppercase text-[10px]">Funding</span>
-        <span className={`font-mono text-sm ${selectedMarket.fundingRate >= 0 ? 'text-long' : 'text-short'}`}>
-          {(selectedMarket.fundingRate * 100).toFixed(4)}%
+        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Current Price</span>
+        <span className="text-sm">
+          ${selectedMarket.price.toLocaleString('en-US', { minimumFractionDigits: 4 })}
         </span>
       </div>
 
-      <div className="h-8 w-px bg-border" />
-
-      {/* 24h Volume */}
+      {/* Long Funding Rate */}
       <div className="flex flex-col">
-        <span className="label-uppercase text-[10px]">24h Volume</span>
-        <span className="font-mono text-sm">${selectedMarket.volume24h}</span>
+        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Long Funding Rate</span>
+        <span className="text-sm text-[#00ff00]">
+          {(selectedMarket.fundingRate * 100).toFixed(2)}%
+        </span>
       </div>
 
-      <div className="h-8 w-px bg-border" />
-
-      {/* Open Interest */}
+      {/* Short Funding Rate */}
       <div className="flex flex-col">
-        <span className="label-uppercase text-[10px]">Open Interest</span>
-        <span className="font-mono text-sm">$2.1B</span>
+        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Short Funding Rate</span>
+        <span className="text-sm text-[#ff4444]">
+          {(selectedMarket.fundingRate * 100 * 1.05).toFixed(2)}%
+        </span>
+      </div>
+
+      {/* Net APR */}
+      <div className="flex flex-col">
+        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Net APR</span>
+        <span className="text-sm text-[#00ff00]">+0.46%</span>
       </div>
     </div>
   );

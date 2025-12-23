@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from 'react';
 import { Position } from '@/types/trading';
 
 interface PositionsTableProps {
@@ -6,78 +9,91 @@ interface PositionsTableProps {
 }
 
 export function PositionsTable({ positions, isConnected }: PositionsTableProps) {
-  if (!isConnected) {
-    return (
-      <div className="trading-card p-6">
-        <h3 className="label-uppercase text-xs mb-6">Active Positions</h3>
-        <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
-          Connect wallet to view positions
-        </div>
-      </div>
-    );
-  }
-
-  if (positions.length === 0) {
-    return (
-      <div className="trading-card p-6">
-        <h3 className="label-uppercase text-xs mb-6">Active Positions</h3>
-        <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
-          No open positions
-        </div>
-      </div>
-    );
-  }
+  const [activeTab, setActiveTab] = useState<'positions' | 'closed'>('positions');
 
   return (
-    <div className="trading-card p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="label-uppercase text-xs">Active Positions</h3>
-        <span className="text-xs text-muted-foreground">{positions.length} open</span>
+    <div className="border-t border-[#1f1f1f]">
+      {/* Tabs */}
+      <div className="flex gap-6 px-4 border-b border-[#1f1f1f]">
+        <button
+          onClick={() => setActiveTab('positions')}
+          className={`py-3 text-sm uppercase tracking-wider border-b-2 transition-colors ${
+            activeTab === 'positions' 
+              ? 'border-white text-white' 
+              : 'border-transparent text-[#6b7280] hover:text-white'
+          }`}
+        >
+          Positions
+        </button>
+        <button
+          onClick={() => setActiveTab('closed')}
+          className={`py-3 text-sm uppercase tracking-wider border-b-2 transition-colors ${
+            activeTab === 'closed' 
+              ? 'border-white text-white' 
+              : 'border-transparent text-[#6b7280] hover:text-white'
+          }`}
+        >
+          Closed
+        </button>
       </div>
-      
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-3 px-4 label-uppercase text-[10px] font-medium">Market</th>
-              <th className="text-right py-3 px-4 label-uppercase text-[10px] font-medium">Size</th>
-              <th className="text-right py-3 px-4 label-uppercase text-[10px] font-medium">Entry Price</th>
-              <th className="text-right py-3 px-4 label-uppercase text-[10px] font-medium">PnL</th>
-            </tr>
-          </thead>
-          <tbody>
-            {positions.map((position) => (
-              <tr key={position.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                <td className="py-4 px-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{position.market}</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase ${
-                      position.side === 'LONG' 
-                        ? 'bg-long/20 text-long' 
-                        : 'bg-short/20 text-short'
-                    }`}>
-                      {position.side}
-                    </span>
-                  </div>
-                </td>
-                <td className="py-4 px-4 text-right font-mono text-sm">
-                  {position.size} <span className="text-muted-foreground">{position.leverage}x</span>
-                </td>
-                <td className="py-4 px-4 text-right font-mono text-sm">
-                  ${position.entryPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </td>
-                <td className="py-4 px-4 text-right">
-                  <div className={`font-mono text-sm ${position.pnl >= 0 ? 'text-long' : 'text-short'}`}>
-                    {position.pnl >= 0 ? '+' : ''}${position.pnl.toFixed(2)}
-                    <span className="text-xs opacity-70 ml-1">
-                      ({position.pnl >= 0 ? '+' : ''}{position.pnlPercent.toFixed(2)}%)
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      {/* Content */}
+      <div className="p-8">
+        {activeTab === 'positions' ? (
+          <>
+            {!isConnected ? (
+              <div className="flex items-center justify-center py-12 text-[#6b7280] text-sm">
+                Connect wallet to view positions
+              </div>
+            ) : positions.length === 0 ? (
+              <div className="flex items-center justify-center py-12 text-[#6b7280] text-sm">
+                No open arbitrage positions
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[#1f1f1f]">
+                    <th className="text-left py-3 text-[10px] text-[#6b7280] uppercase tracking-wider font-normal">Market</th>
+                    <th className="text-right py-3 text-[10px] text-[#6b7280] uppercase tracking-wider font-normal">Size</th>
+                    <th className="text-right py-3 text-[10px] text-[#6b7280] uppercase tracking-wider font-normal">Entry</th>
+                    <th className="text-right py-3 text-[10px] text-[#6b7280] uppercase tracking-wider font-normal">PnL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {positions.map((position) => (
+                    <tr key={position.id} className="border-b border-[#1f1f1f]/50">
+                      <td className="py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">{position.market}</span>
+                          <span className={`text-[10px] uppercase ${
+                            position.side === 'LONG' ? 'text-[#00ff00]' : 'text-[#ff4444]'
+                          }`}>
+                            {position.side}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 text-right text-sm">
+                        {position.size} <span className="text-[#6b7280]">{position.leverage}x</span>
+                      </td>
+                      <td className="py-4 text-right text-sm">
+                        ${position.entryPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="py-4 text-right">
+                        <span className={position.pnl >= 0 ? 'text-[#00ff00]' : 'text-[#ff4444]'}>
+                          {position.pnl >= 0 ? '+' : ''}${position.pnl.toFixed(2)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        ) : (
+          <div className="flex items-center justify-center py-12 text-[#6b7280] text-sm">
+            No closed positions
+          </div>
+        )}
       </div>
     </div>
   );

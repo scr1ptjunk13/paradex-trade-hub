@@ -1,6 +1,5 @@
 "use client";
 
-import { Wallet } from "lucide-react";
 import { WalletState } from "@/types/trading";
 
 interface HeaderProps {
@@ -11,24 +10,21 @@ interface HeaderProps {
 
 export function Header({ wallet, onConnectWallet, onDisconnectWallet }: HeaderProps) {
   return (
-    <header className="h-14 border-b border-border bg-background flex items-center justify-between px-6">
-      <h1 className="text-lg font-semibold">Paradex Trade Hub</h1>
-
+    <header className="h-10 border-b border-[#1f1f1f] bg-[#0a0a0a] flex items-center justify-end px-4 gap-3">
       {wallet.isConnected ? (
         <button
           onClick={onDisconnectWallet}
-          className="flex items-center gap-2 px-4 py-2 rounded-md border border-border bg-secondary hover:bg-muted transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 border border-[#333] hover:border-[#555] transition-colors text-[11px] tracking-wide"
         >
-          <div className="w-2 h-2 rounded-full bg-green-500" />
-          <span className="font-mono text-sm">{wallet.address}</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-[#00ff00]" />
+          <span>{wallet.address}</span>
         </button>
       ) : (
         <button
           onClick={onConnectWallet}
-          className="flex items-center gap-2 px-4 py-2 rounded-md bg-white text-black font-medium hover:bg-gray-200 transition-colors"
+          className="px-4 py-1.5 border border-[#333] hover:bg-[#111] transition-colors text-[11px] tracking-widest uppercase"
         >
-          <Wallet className="w-4 h-4" />
-          <span>Connect Wallet</span>
+          Connect Wallet
         </button>
       )}
     </header>

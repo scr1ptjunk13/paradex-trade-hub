@@ -15,8 +15,8 @@ const MARKETS: Market[] = [
     symbol: "BTC-USD-PERP",
     baseAsset: "BTC",
     quoteAsset: "USD",
-    price: 96500,
-    fundingRate: 0.0001,
+    price: 87987.9,
+    fundingRate: 0.1092,
     volume24h: "2.5B",
     change24h: 2.3,
   },
@@ -67,7 +67,6 @@ export default function Home() {
   const [positions, setPositions] = useState<Position[]>([]);
 
   const handleConnectWallet = useCallback(() => {
-    // Mock wallet connection
     setWallet({
       isConnected: true,
       address: "0x1234...5678",
@@ -100,10 +99,8 @@ export default function Home() {
         throw new Error("Insufficient balance");
       }
 
-      // Mock order placement
       toast.success(`${side} ${size} ${selectedMarket.baseAsset} at ${leverage}x`);
 
-      // Add mock position
       const newPosition: Position = {
         id: Date.now().toString(),
         market: selectedMarket.symbol,
@@ -116,8 +113,8 @@ export default function Home() {
         leverage,
       };
 
-      setPositions((prev) => [...prev, newPosition]);
-      setWallet((prev) => ({
+      setPositions((prev: Position[]) => [...prev, newPosition]);
+      setWallet((prev: WalletState) => ({
         ...prev,
         balance: prev.balance - orderValue,
       }));
@@ -126,7 +123,7 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-[#0a0a0a] flex flex-col overflow-hidden">
       <Header
         wallet={wallet}
         onConnectWallet={handleConnectWallet}
@@ -139,12 +136,35 @@ export default function Home() {
         onSelectMarket={setSelectedMarket}
       />
 
-      <div className="flex-1 flex flex-col lg:flex-row">
-        <div className="flex-1 p-4">
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left side - Chart + Positions */}
+        <div className="flex-1 flex flex-col">
+          {/* Chart Area (placeholder) */}
+          <div className="flex-1 border-b border-[#1f1f1f] relative">
+            {/* Chart placeholder - empty dark space like in the screenshots */}
+            <div className="absolute inset-0 bg-[#0a0a0a]">
+              {/* Price scale on right */}
+              <div className="absolute right-0 top-0 bottom-0 w-20 border-l border-[#1f1f1f] flex flex-col justify-between py-4 text-[11px] text-[#6b7280] text-right pr-2">
+                <span>$89533.00</span>
+                <span>$89918.53</span>
+                <span>$89304.06</span>
+                <span>$88689.59</span>
+                <span>$88075.12</span>
+                <span className="text-white">$87460.65</span>
+                <span>$86846.18</span>
+                <span>$86231.71</span>
+                <span>$85617.24</span>
+                <span>$85002.77</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Positions Table */}
           <PositionsTable positions={positions} isConnected={wallet.isConnected} />
         </div>
 
-        <div className="w-full lg:w-[360px] p-5 border-l border-border">
+        {/* Right side - Trading Panel */}
+        <div className="w-[320px] border-l border-[#1f1f1f] p-4 overflow-y-auto">
           <TradingPanel
             market={selectedMarket}
             wallet={wallet}
