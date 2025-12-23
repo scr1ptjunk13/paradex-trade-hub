@@ -9,9 +9,10 @@ import { PositionsTable } from "@/components/trading/PositionsTable";
 import { WalletModal } from "@/components/WalletModal";
 import { Market, Position, WalletState, OrderSide } from "@/types/trading";
 import { toast } from "sonner";
+import { fetchMarkets, toMarket } from "@/lib/paradex";
 
-// Hardcoded markets as per plan.md
-const MARKETS: Market[] = [
+// Fallback markets if API fails
+const FALLBACK_MARKETS: Market[] = [
   {
     id: "btc-usd-perp",
     symbol: "BTC-USD-PERP",
@@ -19,28 +20,8 @@ const MARKETS: Market[] = [
     quoteAsset: "USD",
     price: 87987.9,
     fundingRate: 0.1092,
-    volume24h: "2.5B",
-    change24h: 2.3,
-  },
-  {
-    id: "eth-usd-perp",
-    symbol: "ETH-USD-PERP",
-    baseAsset: "ETH",
-    quoteAsset: "USD",
-    price: 3420,
-    fundingRate: 0.00008,
-    volume24h: "1.8B",
-    change24h: 1.8,
-  },
-  {
-    id: "sol-usd-perp",
-    symbol: "SOL-USD-PERP",
-    baseAsset: "SOL",
-    quoteAsset: "USD",
-    price: 185,
-    fundingRate: 0.00012,
-    volume24h: "450M",
-    change24h: -0.5,
+    volume24h: "--",
+    change24h: 0,
   },
 ];
 
@@ -63,8 +44,29 @@ export default function Home() {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   const [showWalletModal, setShowWalletModal] = useState(false);
-  const [selectedMarket, setSelectedMarket] = useState<Market>(MARKETS[0]);
+  const [markets, setMarkets] = useState<Market[]>(FALLBACK_MARKETS);
+  const [selectedMarket, setSelectedMarket] = useState<Market>(FALLBACK_MARKETS[0]);
   const [positions, setPositions] = useState<Position[]>([]);
+  const [isLoadingMarkets, setIsLoadingMarkets] = useState(true);
+
+  // Fetch markets from Paradex API on mount
+  useEffect(() => {
+    async function loadMarkets() {
+      try {
+        const paradexMarkets = await fetchMarkets();
+        if (paradexMarkets.length > 0) {
+          const convertedMarkets = paradexMarkets.map((m, i) => toMarket(m, i));
+          setMarkets(convertedMarkets);
+          setSelectedMarket(convertedMarkets[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load markets:', error);
+      } finally {
+        setIsLoadingMarkets(false);
+      }
+    }
+    loadMarkets();
+  }, []);
 
   // Derive wallet state from wagmi
   const wallet: WalletState = {
@@ -134,7 +136,7 @@ export default function Home() {
       />
 
       <MarketBar
-        markets={MARKETS}
+        markets={markets}
         selectedMarket={selectedMarket}
         onSelectMarket={setSelectedMarket}
       />
