@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useAccount, useDisconnect } from "wagmi";
 import { Header } from "@/components/trading/Header";
 import { MarketBar } from "@/components/trading/MarketBar";
 import { TradingPanel } from "@/components/trading/TradingPanel";
 import { PositionsTable } from "@/components/trading/PositionsTable";
+import { WalletModal } from "@/components/WalletModal";
 import { Market, Position, WalletState, OrderSide } from "@/types/trading";
 import { toast } from "sonner";
 
@@ -58,33 +60,37 @@ const MOCK_POSITIONS: Position[] = [
 ];
 
 export default function Home() {
-  const [wallet, setWallet] = useState<WalletState>({
-    isConnected: false,
-    address: null,
-    balance: 0,
-  });
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<Market>(MARKETS[0]);
   const [positions, setPositions] = useState<Position[]>([]);
 
+  // Derive wallet state from wagmi
+  const wallet: WalletState = {
+    isConnected,
+    address: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : null,
+    balance: isConnected ? 10000 : 0, // Mock balance for now
+  };
+
+  // Load mock positions when connected
+  useEffect(() => {
+    if (isConnected) {
+      setPositions(MOCK_POSITIONS);
+      toast.success("Wallet connected");
+    } else {
+      setPositions([]);
+    }
+  }, [isConnected]);
+
   const handleConnectWallet = useCallback(() => {
-    setWallet({
-      isConnected: true,
-      address: "0x1234...5678",
-      balance: 10000,
-    });
-    setPositions(MOCK_POSITIONS);
-    toast.success("Wallet connected");
+    setShowWalletModal(true);
   }, []);
 
   const handleDisconnectWallet = useCallback(() => {
-    setWallet({
-      isConnected: false,
-      address: null,
-      balance: 0,
-    });
-    setPositions([]);
+    disconnect();
     toast.success("Wallet disconnected");
-  }, []);
+  }, [disconnect]);
 
   const handlePlaceOrder = useCallback(
     async (side: OrderSide, size: number, leverage: number) => {
@@ -114,10 +120,7 @@ export default function Home() {
       };
 
       setPositions((prev: Position[]) => [...prev, newPosition]);
-      setWallet((prev: WalletState) => ({
-        ...prev,
-        balance: prev.balance - orderValue,
-      }));
+      // Note: In real implementation, balance would be fetched from Paradex API
     },
     [selectedMarket, wallet]
   );
@@ -172,6 +175,11 @@ export default function Home() {
           />
         </div>
       </div>
+      {/* Wallet Connection Modal */}
+      <WalletModal 
+        isOpen={showWalletModal} 
+        onClose={() => setShowWalletModal(false)} 
+      />
     </div>
   );
 }
