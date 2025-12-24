@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 import { Market } from '@/types/trading';
 import { fetchMarketSummary, formatVolume, formatFundingRate, ParadexMarketSummary } from '@/lib/paradex';
+import { getCryptoLogoUrl } from '@/lib/logoMapping';
 
 interface MarketBarProps {
   markets: Market[];
@@ -11,42 +12,65 @@ interface MarketBarProps {
   onSelectMarket: (market: Market) => void;
 }
 
-function getAssetIconUrl(baseAsset: string): string | null {
-  const normalized = baseAsset.trim().toLowerCase();
-  if (normalized === 'strk') {
-    return 'https://cryptologos.cc/logos/starknet-token-strk-logo.png?v=032';
-  }
-  // spothq cryptocurrency-icons supports many major tickers; unknowns will fallback
-  // Use 32px for crisp rendering; we display at 16-18px.
-  // Some tickers contain non-alphabetic chars (e.g. 0G) which are unlikely to exist.
-  if (!/^[a-z]{2,10}$/.test(normalized)) return null;
-  return `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${normalized}.png`;
-}
-
+// Smart icon component with multi-source fallback
 function AssetIcon({ baseAsset }: { baseAsset: string }) {
-  const [failed, setFailed] = useState(false);
-  const url = useMemo(() => getAssetIconUrl(baseAsset), [baseAsset]);
+  const [currentUrlIndex, setCurrentUrlIndex] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const urls = useMemo(() => getCryptoLogoUrl(baseAsset), [baseAsset]);
 
-  if (!url || failed) {
+  // Reset when baseAsset changes
+  useEffect(() => {
+    setCurrentUrlIndex(0);
+    setImageLoaded(false);
+  }, [baseAsset]);
+
+  // If all URLs failed or no URLs available, show letter badge
+  if (currentUrlIndex >= urls.length) {
     return (
-      <div className="w-4 h-4 rounded-sm bg-[#1a1a1a] border border-[#222] flex items-center justify-center text-[9px] text-[#9ca3af]">
+      <div className="w-4 h-4 rounded-full bg-gradient-to-br from-[#333] to-[#222] flex items-center justify-center text-[10px] font-medium text-white">
         {baseAsset.slice(0, 1).toUpperCase()}
       </div>
     );
   }
 
   return (
-    <img
-      src={url}
-      alt={baseAsset}
-      width={16}
-      height={16}
-      loading="lazy"
-      decoding="async"
-      referrerPolicy="no-referrer"
-      className="w-4 h-4 rounded-sm"
-      onError={() => setFailed(true)}
-    />
+    <>
+      {/* Hidden preloader for next URL */}
+      {!imageLoaded && currentUrlIndex < urls.length && (
+        <img
+          src={urls[currentUrlIndex]}
+          alt=""
+          width={1}
+          height={1}
+          style={{ position: 'absolute', visibility: 'hidden' }}
+          onLoad={() => setImageLoaded(true)}
+          onError={() => {
+            // Try next URL
+            if (currentUrlIndex < urls.length - 1) {
+              setCurrentUrlIndex(prev => prev + 1);
+            } else {
+              setCurrentUrlIndex(urls.length); // Show badge
+            }
+          }}
+        />
+      )}
+      
+      {/* Visible image once loaded */}
+      {imageLoaded && (
+        <img
+          src={urls[currentUrlIndex]}
+          alt={baseAsset}
+          className="w-4 h-4 rounded-sm object-contain"
+        />
+      )}
+      
+      {/* Loading placeholder while image loads */}
+      {!imageLoaded && currentUrlIndex < urls.length && (
+        <div className="w-4 h-4 rounded-full bg-gradient-to-br from-[#333] to-[#222] flex items-center justify-center text-[10px] font-medium text-white animate-pulse">
+          {baseAsset.slice(0, 1).toUpperCase()}
+        </div>
+      )}
+    </>
   );
 }
 
