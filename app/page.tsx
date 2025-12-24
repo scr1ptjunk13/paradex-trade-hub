@@ -157,13 +157,15 @@ export default function Home() {
         }
 
         try {
-          // Round size to market's size increment
+          // Round size to market's size increment (fix floating point precision)
           const increment = selectedMarket.sizeIncrement || 0.00001;
+          const decimals = Math.max(0, -Math.floor(Math.log10(increment)));
           const roundedSize = Math.floor(size / increment) * increment;
-          const notionalValue = roundedSize * currentPrice;
+          const formattedSize = roundedSize.toFixed(decimals);
+          const notionalValue = parseFloat(formattedSize) * currentPrice;
           
           // Validation 1: Size too small (after rounding)
-          if (roundedSize <= 0) {
+          if (parseFloat(formattedSize) <= 0) {
             toast.error(`Size too small. Min increment: ${increment} ${selectedMarket.baseAsset}`);
             throw new Error('Size too small');
           }
@@ -177,7 +179,7 @@ export default function Home() {
           
           // Validation 3: Above maximum order size (from API)
           const maxSize = selectedMarket.maxOrderSize || 100;
-          if (roundedSize > maxSize) {
+          if (parseFloat(formattedSize) > maxSize) {
             toast.error(`Order too large. Max: ${maxSize} ${selectedMarket.baseAsset}`);
             throw new Error('Above maximum size');
           }
@@ -187,10 +189,10 @@ export default function Home() {
             market: selectedMarket.symbol,
             side: side === 'LONG' ? 'BUY' : 'SELL',
             type: 'MARKET',
-            size: roundedSize.toFixed(8).replace(/\.?0+$/, ''),
+            size: formattedSize,
           });
 
-          toast.success(`${side} ${roundedSize} ${selectedMarket.baseAsset} @ ~$${notionalValue.toFixed(2)}`);
+          toast.success(`${side} ${formattedSize} ${selectedMarket.baseAsset} @ ~$${notionalValue.toFixed(2)}`);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Order failed';
           toast.error(message);
