@@ -10,10 +10,9 @@ import {
   trustWallet,
   argentWallet,
   braveWallet,
-  injectedWallet,
 } from '@rainbow-me/rainbowkit/wallets';
 import { mainnet } from 'wagmi/chains';
-import { cookieStorage, createStorage, http } from 'wagmi';
+import { createStorage, http } from 'wagmi';
 
 // Lazy load config to prevent WalletConnect's indexedDB initialization on server
 let wagmiConfig: ReturnType<typeof getDefaultConfig> | null = null;
@@ -24,9 +23,15 @@ export function getConfig() {
       appName: 'Paradex Trade Hub',
       projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'demo',
       chains: [mainnet],
-      ssr: true,
+      ssr: false,
+      multiInjectedProviderDiscovery: false, // Prevent auto-discovery of injected wallets
+      // Disable storage to prevent auto-reconnect on page load
       storage: createStorage({
-        storage: cookieStorage,
+        storage: {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {},
+        },
       }),
       transports: {
         [mainnet.id]: http(),
@@ -35,7 +40,7 @@ export function getConfig() {
         {
           groupName: 'Installed',
           wallets: [
-            injectedWallet,
+            // Removed injectedWallet to prevent auto-connect
             braveWallet,
             metaMaskWallet,
             phantomWallet,
