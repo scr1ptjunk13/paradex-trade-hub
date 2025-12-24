@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 import { Market } from '@/types/trading';
+import { fetchMarketSummary, formatVolume, formatFundingRate, ParadexMarketSummary } from '@/lib/paradex';
 
 interface MarketBarProps {
   markets: Market[];
@@ -14,6 +15,19 @@ export function MarketBar({ markets, selectedMarket, onSelectMarket }: MarketBar
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [marketSummary, setMarketSummary] = useState<ParadexMarketSummary | null>(null);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+
+  // Fetch market summary when selected market changes
+  useEffect(() => {
+    async function loadSummary() {
+      setIsLoadingSummary(true);
+      const summary = await fetchMarketSummary(selectedMarket.symbol);
+      setMarketSummary(summary);
+      setIsLoadingSummary(false);
+    }
+    loadSummary();
+  }, [selectedMarket.symbol]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -95,34 +109,40 @@ export function MarketBar({ markets, selectedMarket, onSelectMarket }: MarketBar
         )}
       </div>
 
-      {/* Current Price */}
+      {/* Mark Price */}
       <div className="flex flex-col">
-        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Current Price</span>
+        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Mark Price</span>
         <span className="text-sm">
-          ${selectedMarket.price.toLocaleString('en-US', { minimumFractionDigits: 4 })}
+          {isLoadingSummary ? (
+            <span className="text-[#6b7280]">Loading...</span>
+          ) : marketSummary ? (
+            `$${parseFloat(marketSummary.mark_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+          ) : '--'}
         </span>
       </div>
 
-      {/* Long Funding Rate */}
+      {/* Funding Rate */}
       <div className="flex flex-col">
-        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Long Funding Rate</span>
-        <span className="text-sm text-[#00ff00]">
-          {(selectedMarket.fundingRate * 100).toFixed(2)}%
+        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Funding Rate</span>
+        <span className={`text-sm ${marketSummary && parseFloat(marketSummary.funding_rate) >= 0 ? 'text-[#00ff00]' : 'text-[#ff4444]'}`}>
+          {isLoadingSummary ? (
+            <span className="text-[#6b7280]">Loading...</span>
+          ) : marketSummary ? (
+            formatFundingRate(marketSummary.funding_rate)
+          ) : '--'}
         </span>
       </div>
 
-      {/* Short Funding Rate */}
+      {/* 24h Volume */}
       <div className="flex flex-col">
-        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Short Funding Rate</span>
-        <span className="text-sm text-[#ff4444]">
-          {(selectedMarket.fundingRate * 100 * 1.05).toFixed(2)}%
+        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">24h Volume</span>
+        <span className="text-sm">
+          {isLoadingSummary ? (
+            <span className="text-[#6b7280]">Loading...</span>
+          ) : marketSummary ? (
+            formatVolume(marketSummary.volume_24h)
+          ) : '--'}
         </span>
-      </div>
-
-      {/* Net APR */}
-      <div className="flex flex-col">
-        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Net APR</span>
-        <span className="text-sm text-[#00ff00]">+0.46%</span>
       </div>
     </div>
   );

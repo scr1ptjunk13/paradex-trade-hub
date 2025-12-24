@@ -18,6 +18,20 @@ export interface ParadexMarketsResponse {
   results: ParadexMarket[];
 }
 
+export interface ParadexMarketSummary {
+  symbol: string;
+  mark_price: string;
+  funding_rate: string;
+  volume_24h: string;
+  price_change_rate_24h: string;
+  last_traded_price: string;
+  open_interest: string;
+}
+
+export interface ParadexMarketSummaryResponse {
+  results: ParadexMarketSummary[];
+}
+
 export async function fetchMarkets(): Promise<ParadexMarket[]> {
   try {
     const response = await fetch(`${PARADEX_API_URL}/markets`, {
@@ -52,6 +66,50 @@ export async function fetchMarkets(): Promise<ParadexMarket[]> {
   }
 }
 
+// Fetch market summary (price, funding rate, volume) for a specific market
+export async function fetchMarketSummary(market: string): Promise<ParadexMarketSummary | null> {
+  try {
+    const response = await fetch(`${PARADEX_API_URL}/markets/summary?market=${market}`, {
+      headers: {
+        'Accept': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch market summary: ${response.status}`);
+    }
+
+    const data: ParadexMarketSummaryResponse = await response.json();
+    return data.results[0] || null;
+  } catch (error) {
+    console.error('Error fetching market summary:', error);
+    return null;
+  }
+}
+
+// Format volume to human readable (e.g., 618871876 -> $618.9M)
+export function formatVolume(volume: string): string {
+  const num = parseFloat(volume);
+  if (isNaN(num)) return '--';
+  
+  if (num >= 1_000_000_000) {
+    return `$${(num / 1_000_000_000).toFixed(1)}B`;
+  } else if (num >= 1_000_000) {
+    return `$${(num / 1_000_000).toFixed(1)}M`;
+  } else if (num >= 1_000) {
+    return `$${(num / 1_000).toFixed(1)}K`;
+  }
+  return `$${num.toFixed(0)}`;
+}
+
+// Format funding rate to percentage (e.g., 0.0001 -> 0.0100%)
+export function formatFundingRate(rate: string): string {
+  const num = parseFloat(rate);
+  if (isNaN(num)) return '--';
+  return `${(num * 100).toFixed(4)}%`;
+}
+
 // Convert Paradex market to our Market type
 export function toMarket(paradexMarket: ParadexMarket, index: number): {
   id: string;
@@ -68,7 +126,7 @@ export function toMarket(paradexMarket: ParadexMarket, index: number): {
     symbol: paradexMarket.symbol,
     baseAsset: paradexMarket.base_currency,
     quoteAsset: paradexMarket.quote_currency,
-    price: 0, // Will be fetched separately or hardcoded
+    price: 0,
     fundingRate: 0,
     volume24h: '--',
     change24h: 0,
