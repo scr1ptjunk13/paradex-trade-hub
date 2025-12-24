@@ -107,11 +107,11 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
 
   return (
     <div className="flex flex-col h-full">
-      <h3 className="text-[11px] text-[#6b7280] uppercase tracking-widest mb-6">Position Controls</h3>
+      <h3 className="text-[13px] text-[#6b7280] uppercase tracking-widest mb-6">Position Controls</h3>
 
       {/* Position Size */}
       <div className="mb-6">
-        <label className="text-[10px] text-[#6b7280] uppercase tracking-wider block mb-2">
+        <label className="text-[12px] text-[#6b7280] uppercase tracking-wider block mb-2">
           Size
         </label>
         <div className="relative">
@@ -120,13 +120,13 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
             value={size}
             onChange={handleSizeChange}
             placeholder="0.00"
-            className="w-full bg-[#0a0a0a] border border-[#222] px-3 py-2.5 pr-24 text-[12px] placeholder:text-[#444] focus:outline-none focus:border-[#333]"
+            className="w-full bg-[#0a0a0a] border border-[#222] px-4 py-3 pr-28 text-[14px] placeholder:text-[#444] focus:outline-none focus:border-[#333]"
           />
           {/* Unit Toggle */}
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex bg-[#1a1a1a] rounded overflow-hidden border border-[#333]">
             <button
               onClick={() => setSizeUnit('BASE')}
-              className={`px-2 py-1 text-[10px] font-medium transition-colors ${
+              className={`px-3 py-1.5 text-[12px] font-medium transition-colors ${
                 sizeUnit === 'BASE' 
                   ? 'bg-white text-black' 
                   : 'text-[#6b7280] hover:text-white'
@@ -136,7 +136,7 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
             </button>
             <button
               onClick={() => setSizeUnit('USD')}
-              className={`px-2 py-1 text-[10px] font-medium transition-colors ${
+              className={`px-3 py-1.5 text-[12px] font-medium transition-colors ${
                 sizeUnit === 'USD' 
                   ? 'bg-white text-black' 
                   : 'text-[#6b7280] hover:text-white'
@@ -147,7 +147,7 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
           </div>
         </div>
         {/* Conversion display */}
-        <div className="flex justify-between mt-2 text-[11px] text-[#6b7280]">
+        <div className="flex justify-between mt-2 text-[13px] text-[#6b7280]">
           {sizeUnit === 'BASE' ? (
             <span>≈ ${sizeInUSD > 0 ? sizeInUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'} USD</span>
           ) : (
@@ -159,8 +159,8 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
       {/* Leverage */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <label className="text-[10px] text-[#6b7280] uppercase tracking-wider">Leverage</label>
-          <span className="text-[12px]">{leverage}x</span>
+          <label className="text-[12px] text-[#6b7280] uppercase tracking-wider">Leverage</label>
+          <span className="text-[14px] font-medium">{leverage}x</span>
         </div>
         
         {/* Leverage slider - smooth draggable */}
@@ -182,7 +182,7 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
           />
         </div>
         
-        <div className="flex justify-between text-[11px] text-[#6b7280]">
+        <div className="flex justify-between text-[13px] text-[#6b7280]">
           {LEVERAGE_OPTIONS.map((lev) => (
             <button
               key={lev}
@@ -196,13 +196,13 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
       </div>
 
       {/* Available Balance */}
-      <div className="mb-6 px-3 py-2 border border-[#222]">
-        <div className="flex justify-between text-[12px]">
+      <div className="mb-6 px-4 py-3 border border-[#222]">
+        <div className="flex justify-between text-[14px]">
           <span className="text-[#6b7280]">Available Balance</span>
           <span>${wallet.isConnected ? wallet.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '--'}</span>
         </div>
         {sizeNum > 0 && wallet.isConnected && (
-          <div className="flex justify-between text-[11px] mt-2">
+          <div className="flex justify-between text-[13px] mt-2">
             <span className="text-[#6b7280]">Required Margin</span>
             <span className={requiredMargin > wallet.balance ? 'text-[#ff4444]' : ''}>
               ${requiredMargin.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -213,7 +213,7 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
 
       {/* Validation Error */}
       {validationError && wallet.isConnected && size && (
-        <div className="mb-4 text-[11px] text-[#ff4444]">
+        <div className="mb-4 text-[13px] text-[#ff4444]">
           {validationError}
         </div>
       )}
@@ -224,7 +224,7 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
       {/* Connect Wallet or Trade Buttons */}
       {!wallet.isConnected ? (
         <div className="mt-auto">
-          <div className="flex items-center justify-center gap-2 text-[10px] text-[#6b7280] mb-3">
+          <div className="flex items-center justify-center gap-2 text-[13px] text-[#6b7280] mb-3">
             <span>Connect your wallet to start trading</span>
           </div>
         </div>
@@ -233,14 +233,14 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
           <button
             onClick={() => handlePlaceOrder('LONG')}
             disabled={!!validationError || isLoading}
-            className="py-2.5 bg-[#00ff00] text-black text-[11px] uppercase tracking-wider font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            className="py-3 bg-[#00ff00] text-black text-[13px] uppercase tracking-wider font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Long
           </button>
           <button
             onClick={() => handlePlaceOrder('SHORT')}
             disabled={!!validationError || isLoading}
-            className="py-2.5 bg-[#ff4444] text-white text-[11px] uppercase tracking-wider font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            className="py-3 bg-[#ff4444] text-white text-[13px] uppercase tracking-wider font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Short
           </button>

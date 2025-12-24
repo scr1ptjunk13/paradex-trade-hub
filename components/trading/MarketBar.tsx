@@ -119,7 +119,7 @@ export function MarketBar({ markets, selectedMarket, onSelectMarket }: MarketBar
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           <AssetIcon baseAsset={selectedMarket.baseAsset} />
-          <span className="text-[12px] font-medium">{selectedMarket.baseAsset}-PERP</span>
+          <span className="text-[14px] font-medium">{selectedMarket.baseAsset}-PERP</span>
           <ChevronDown className={`w-3 h-3 text-[#6b7280] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
         
@@ -175,10 +175,10 @@ export function MarketBar({ markets, selectedMarket, onSelectMarket }: MarketBar
 
       {/* Mark Price */}
       <div className="flex flex-col">
-        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Mark Price</span>
-        <span className="text-[12px]">
+        <span className="text-[12px] text-[#6b7280] uppercase tracking-wider">Mark Price</span>
+        <span className="text-[14px]">
           {isLoadingSummary ? (
-            <Spinner size={12} />
+            <Spinner size={14} />
           ) : marketSummary ? (
             `$${parseFloat(marketSummary.mark_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
           ) : '--'}
@@ -187,10 +187,10 @@ export function MarketBar({ markets, selectedMarket, onSelectMarket }: MarketBar
 
       {/* Funding Rate */}
       <div className="flex flex-col">
-        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">Funding Rate</span>
-        <span className={`text-[12px] ${marketSummary && parseFloat(marketSummary.funding_rate) >= 0 ? 'text-[#00ff00]' : 'text-[#ff4444]'}`}>
+        <span className="text-[12px] text-[#6b7280] uppercase tracking-wider">Funding Rate</span>
+        <span className={`text-[14px] ${marketSummary && parseFloat(marketSummary.funding_rate) >= 0 ? 'text-[#00ff00]' : 'text-[#ff4444]'}`}>
           {isLoadingSummary ? (
-            <Spinner size={12} />
+            <Spinner size={14} />
           ) : marketSummary ? (
             formatFundingRate(marketSummary.funding_rate)
           ) : '--'}
@@ -199,10 +199,10 @@ export function MarketBar({ markets, selectedMarket, onSelectMarket }: MarketBar
 
       {/* 24h Volume */}
       <div className="flex flex-col">
-        <span className="text-[10px] text-[#6b7280] uppercase tracking-wider">24h Volume</span>
-        <span className="text-[12px]">
+        <span className="text-[12px] text-[#6b7280] uppercase tracking-wider">24h Volume</span>
+        <span className="text-[14px]">
           {isLoadingSummary ? (
-            <Spinner size={12} />
+            <Spinner size={14} />
           ) : marketSummary ? (
             formatVolume(marketSummary.volume_24h)
           ) : '--'}
