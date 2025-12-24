@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Market, OrderSide, WalletState } from '@/types/trading';
 import { toast } from 'sonner';
 
@@ -11,11 +11,14 @@ interface TradingPanelProps {
 }
 
 const LEVERAGE_OPTIONS = [1, 5, 10, 25, 50];
+const MIN_LEVERAGE = 1;
+const MAX_LEVERAGE = 50;
 
 export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps) {
   const [size, setSize] = useState('');
   const [leverage, setLeverage] = useState(10);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
 
   const sizeNum = parseFloat(size) || 0;
@@ -45,13 +48,46 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
     }
   };
 
-  // Handle slider drag
-  const handleSliderClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  // Calculate leverage from mouse/touch position
+  const calculateLeverageFromPosition = useCallback((clientX: number) => {
     if (!sliderRef.current) return;
     const rect = sliderRef.current.getBoundingClientRect();
-    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const newLeverage = Math.max(1, Math.round(percent * 50));
-    setLeverage(newLeverage);
+    const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const newLeverage = Math.round(MIN_LEVERAGE + percent * (MAX_LEVERAGE - MIN_LEVERAGE));
+    setLeverage(Math.max(MIN_LEVERAGE, Math.min(MAX_LEVERAGE, newLeverage)));
+  }, []);
+
+  // Handle mouse events for smooth dragging
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    calculateLeverageFromPosition(e.clientX);
+  }, [calculateLeverageFromPosition]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging) return;
+    calculateLeverageFromPosition(e.clientX);
+  }, [isDragging, calculateLeverageFromPosition]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Add/remove global mouse listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  // Handle slider click (for clicking anywhere on track)
+  const handleSliderClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    calculateLeverageFromPosition(e.clientX);
   };
 
   const handleSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,19 +131,22 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
           <span className="text-sm">{leverage}x</span>
         </div>
         
-        {/* Leverage slider - clickable */}
+        {/* Leverage slider - smooth draggable */}
         <div 
           ref={sliderRef}
           onClick={handleSliderClick}
-          className="relative h-2 bg-[#222] mb-3 cursor-pointer rounded"
+          className="relative h-1.5 bg-[#333] mb-3 cursor-pointer rounded-full select-none"
         >
+          {/* Filled track */}
           <div 
-            className="absolute h-full bg-white rounded-l" 
-            style={{ width: `${(leverage / 50) * 100}%` }}
+            className="absolute h-full bg-white rounded-full transition-none" 
+            style={{ width: `${((leverage - MIN_LEVERAGE) / (MAX_LEVERAGE - MIN_LEVERAGE)) * 100}%` }}
           />
+          {/* Thumb/handle */}
           <div 
-            className="absolute w-3 h-3 bg-white rounded-full -top-0.5 transform -translate-x-1/2"
-            style={{ left: `${(leverage / 50) * 100}%` }}
+            onMouseDown={handleMouseDown}
+            className={`absolute w-4 h-4 bg-white border-2 border-[#0a0a0a] rounded-sm -top-[5px] transform -translate-x-1/2 cursor-grab ${isDragging ? 'cursor-grabbing scale-110' : 'hover:scale-110'} transition-transform`}
+            style={{ left: `${((leverage - MIN_LEVERAGE) / (MAX_LEVERAGE - MIN_LEVERAGE)) * 100}%` }}
           />
         </div>
         

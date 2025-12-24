@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 import { Market } from '@/types/trading';
 import { fetchMarketSummary, formatVolume, formatFundingRate, ParadexMarketSummary } from '@/lib/paradex';
@@ -9,6 +9,45 @@ interface MarketBarProps {
   markets: Market[];
   selectedMarket: Market;
   onSelectMarket: (market: Market) => void;
+}
+
+function getAssetIconUrl(baseAsset: string): string | null {
+  const normalized = baseAsset.trim().toLowerCase();
+  if (normalized === 'strk') {
+    return 'https://cryptologos.cc/logos/starknet-token-strk-logo.png?v=032';
+  }
+  // spothq cryptocurrency-icons supports many major tickers; unknowns will fallback
+  // Use 32px for crisp rendering; we display at 16-18px.
+  // Some tickers contain non-alphabetic chars (e.g. 0G) which are unlikely to exist.
+  if (!/^[a-z]{2,10}$/.test(normalized)) return null;
+  return `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${normalized}.png`;
+}
+
+function AssetIcon({ baseAsset }: { baseAsset: string }) {
+  const [failed, setFailed] = useState(false);
+  const url = useMemo(() => getAssetIconUrl(baseAsset), [baseAsset]);
+
+  if (!url || failed) {
+    return (
+      <div className="w-4 h-4 rounded-sm bg-[#1a1a1a] border border-[#222] flex items-center justify-center text-[9px] text-[#9ca3af]">
+        {baseAsset.slice(0, 1).toUpperCase()}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={url}
+      alt={baseAsset}
+      width={16}
+      height={16}
+      loading="lazy"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      className="w-4 h-4 rounded-sm"
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 export function MarketBar({ markets, selectedMarket, onSelectMarket }: MarketBarProps) {
@@ -54,8 +93,8 @@ export function MarketBar({ markets, selectedMarket, onSelectMarket }: MarketBar
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <div className="w-2 h-2 rounded-full bg-[#f97316]" />
-          <span className="text-sm font-medium">{selectedMarket.symbol}</span>
+          <AssetIcon baseAsset={selectedMarket.baseAsset} />
+          <span className="text-sm font-medium">{selectedMarket.baseAsset}-PERP</span>
           <ChevronDown className={`w-3 h-3 text-[#6b7280] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
         
@@ -89,17 +128,17 @@ export function MarketBar({ markets, selectedMarket, onSelectMarket }: MarketBar
                       setIsOpen(false);
                       setSearch('');
                     }}
-                    className={`w-full flex items-center justify-between px-3 py-2 hover:bg-[#1a1a1a] text-sm ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 hover:bg-[#1a1a1a] text-sm ${
                       market.id === selectedMarket.id ? 'bg-[#1a1a1a]' : ''
                     }`}
                   >
-                    <span>{market.symbol}</span>
-                    <span className="text-[#6b7280] text-xs">
-                      {market.change24h !== 0 ? (
-                        <span className={market.change24h >= 0 ? 'text-[#00ff00]' : 'text-[#ff4444]'}>
-                          {market.change24h >= 0 ? '+' : ''}{market.change24h.toFixed(2)}%
-                        </span>
-                      ) : '--'}
+                    <div className="flex items-center gap-2">
+                      <AssetIcon baseAsset={market.baseAsset} />
+                      <span className="font-medium">{market.baseAsset}</span>
+                      <span className="text-[10px] text-[#6b7280] uppercase">PERP</span>
+                    </div>
+                    <span className="text-xs text-[#6b7280]">
+                      ${market.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </button>
                 ))
