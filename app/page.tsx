@@ -25,6 +25,8 @@ const FALLBACK_MARKETS: Market[] = [
     volume24h: "--",
     change24h: 0,
     sizeIncrement: 0.00001,
+    minNotional: 10,
+    maxOrderSize: 100,
   },
 ];
 
@@ -158,10 +160,26 @@ export default function Home() {
           // Round size to market's size increment
           const increment = selectedMarket.sizeIncrement || 0.00001;
           const roundedSize = Math.floor(size / increment) * increment;
+          const notionalValue = roundedSize * currentPrice;
           
+          // Validation 1: Size too small (after rounding)
           if (roundedSize <= 0) {
-            toast.error(`Size too small. Minimum increment is ${increment} ${selectedMarket.baseAsset}`);
+            toast.error(`Size too small. Min increment: ${increment} ${selectedMarket.baseAsset}`);
             throw new Error('Size too small');
+          }
+          
+          // Validation 2: Below minimum notional (from API)
+          const minNotional = selectedMarket.minNotional || 10;
+          if (notionalValue < minNotional) {
+            toast.error(`Order too small. Min: $${minNotional} (you entered ~$${notionalValue.toFixed(2)})`);
+            throw new Error('Below minimum notional');
+          }
+          
+          // Validation 3: Above maximum order size (from API)
+          const maxSize = selectedMarket.maxOrderSize || 100;
+          if (roundedSize > maxSize) {
+            toast.error(`Order too large. Max: ${maxSize} ${selectedMarket.baseAsset}`);
+            throw new Error('Above maximum size');
           }
 
           // Place real order via Paradex API
@@ -172,7 +190,7 @@ export default function Home() {
             size: roundedSize.toFixed(8).replace(/\.?0+$/, ''),
           });
 
-          toast.success(`${side} ${roundedSize} ${selectedMarket.baseAsset} order placed!`);
+          toast.success(`${side} ${roundedSize} ${selectedMarket.baseAsset} @ ~$${notionalValue.toFixed(2)}`);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Order failed';
           toast.error(message);

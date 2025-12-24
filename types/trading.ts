@@ -7,7 +7,10 @@ export interface Market {
   fundingRate: number;
   volume24h: string;
   change24h: number;
-  sizeIncrement: number;
+  // Trading restrictions (from API - never hardcode)
+  sizeIncrement: number;  // Minimum size step (e.g., 0.00001 BTC)
+  minNotional: number;    // Minimum order value in USD (e.g., $10)
+  maxOrderSize: number;   // Maximum order size in base asset
 }
 
 export interface Position {

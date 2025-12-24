@@ -120,6 +120,8 @@ export async function toMarket(paradexMarket: ParadexMarket): Promise<{
   volume24h: string;
   change24h: number;
   sizeIncrement: number;
+  minNotional: number;
+  maxOrderSize: number;
 }> {
   // Fetch summary data for price
   const summary = await fetchMarketSummary(paradexMarket.symbol);
@@ -133,6 +135,9 @@ export async function toMarket(paradexMarket: ParadexMarket): Promise<{
     fundingRate: summary ? parseFloat(summary.funding_rate) : 0,
     volume24h: summary ? formatVolume(summary.volume_24h) : '--',
     change24h: summary ? parseFloat(summary.price_change_rate_24h) * 100 : 0,
+    // Trading restrictions from API (never hardcode)
     sizeIncrement: parseFloat(paradexMarket.order_size_increment) || 0.00001,
+    minNotional: parseFloat(paradexMarket.min_notional) || 10,
+    maxOrderSize: parseFloat(paradexMarket.max_order_size) || 100,
   };
 }
