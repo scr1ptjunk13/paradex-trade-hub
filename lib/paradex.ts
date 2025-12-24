@@ -110,8 +110,7 @@ export function formatFundingRate(rate: string): string {
   return `${(num * 100).toFixed(4)}%`;
 }
 
-// Convert Paradex market to our Market type
-export function toMarket(paradexMarket: ParadexMarket, index: number): {
+export async function toMarket(paradexMarket: ParadexMarket): Promise<{
   id: string;
   symbol: string;
   baseAsset: string;
@@ -120,15 +119,18 @@ export function toMarket(paradexMarket: ParadexMarket, index: number): {
   fundingRate: number;
   volume24h: string;
   change24h: number;
-} {
+}> {
+  // Fetch summary data for price
+  const summary = await fetchMarketSummary(paradexMarket.symbol);
+  
   return {
     id: paradexMarket.symbol.toLowerCase(),
     symbol: paradexMarket.symbol,
     baseAsset: paradexMarket.base_currency,
     quoteAsset: paradexMarket.quote_currency,
-    price: 0,
-    fundingRate: 0,
-    volume24h: '--',
-    change24h: 0,
+    price: summary ? parseFloat(summary.mark_price) : 0,
+    fundingRate: summary ? parseFloat(summary.funding_rate) : 0,
+    volume24h: summary ? formatVolume(summary.volume_24h) : '--',
+    change24h: summary ? parseFloat(summary.price_change_rate_24h) * 100 : 0,
   };
 }
