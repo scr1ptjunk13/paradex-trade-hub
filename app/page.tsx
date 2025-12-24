@@ -194,22 +194,7 @@ export default function Home() {
         <div className="flex-1 flex flex-col">
           {/* Chart Area (placeholder) */}
           <div className="flex-1 border-b border-[#1f1f1f] relative">
-            {/* Chart placeholder - empty dark space like in the screenshots */}
-            <div className="absolute inset-0 bg-[#0a0a0a]">
-              {/* Price scale on right */}
-              <div className="absolute right-0 top-0 bottom-0 w-20 border-l border-[#1f1f1f] flex flex-col justify-between py-4 text-[11px] text-[#6b7280] text-right pr-2">
-                <span>$89533.00</span>
-                <span>$89918.53</span>
-                <span>$89304.06</span>
-                <span>$88689.59</span>
-                <span>$88075.12</span>
-                <span className="text-white">$87460.65</span>
-                <span>$86846.18</span>
-                <span>$86231.71</span>
-                <span>$85617.24</span>
-                <span>$85002.77</span>
-              </div>
-            </div>
+            <div className="absolute inset-0 bg-[#0a0a0a]" />
           </div>
 
           {/* Positions Table */}

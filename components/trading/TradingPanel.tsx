@@ -120,7 +120,7 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
             value={size}
             onChange={handleSizeChange}
             placeholder="0.00"
-            className="w-full bg-[#0a0a0a] border border-[#222] px-3 py-2.5 pr-24 text-sm placeholder:text-[#444] focus:outline-none focus:border-[#333]"
+            className="w-full bg-[#0a0a0a] border border-[#222] px-3 py-2.5 pr-24 text-[12px] placeholder:text-[#444] focus:outline-none focus:border-[#333]"
           />
           {/* Unit Toggle */}
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex bg-[#1a1a1a] rounded overflow-hidden border border-[#333]">
@@ -160,7 +160,7 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <label className="text-[10px] text-[#6b7280] uppercase tracking-wider">Leverage</label>
-          <span className="text-sm">{leverage}x</span>
+          <span className="text-[12px]">{leverage}x</span>
         </div>
         
         {/* Leverage slider - smooth draggable */}
@@ -174,10 +174,10 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
             className="absolute h-full bg-white rounded-full transition-none" 
             style={{ width: `${((leverage - MIN_LEVERAGE) / (MAX_LEVERAGE - MIN_LEVERAGE)) * 100}%` }}
           />
-          {/* Thumb/handle */}
+          {/* Thumb/handle - white border, black inside */}
           <div 
             onMouseDown={handleMouseDown}
-            className={`absolute w-4 h-4 bg-white border-2 border-[#0a0a0a] rounded-sm -top-[5px] transform -translate-x-1/2 cursor-grab ${isDragging ? 'cursor-grabbing scale-110' : 'hover:scale-110'} transition-transform`}
+            className={`absolute w-3 h-3 bg-black border border-white -top-[3px] transform -translate-x-1/2 cursor-grab ${isDragging ? 'cursor-grabbing' : ''}`}
             style={{ left: `${((leverage - MIN_LEVERAGE) / (MAX_LEVERAGE - MIN_LEVERAGE)) * 100}%` }}
           />
         </div>
@@ -196,8 +196,8 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
       </div>
 
       {/* Available Balance */}
-      <div className="mb-6 p-3 border border-[#222]">
-        <div className="flex justify-between text-sm">
+      <div className="mb-6 px-3 py-2 border border-[#222]">
+        <div className="flex justify-between text-[12px]">
           <span className="text-[#6b7280]">Available Balance</span>
           <span>${wallet.isConnected ? wallet.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '--'}</span>
         </div>
@@ -224,7 +224,7 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
       {/* Connect Wallet or Trade Buttons */}
       {!wallet.isConnected ? (
         <div className="mt-auto">
-          <div className="flex items-center justify-center gap-2 text-[11px] text-[#6b7280] mb-3">
+          <div className="flex items-center justify-center gap-2 text-[10px] text-[#6b7280] mb-3">
             <span>Connect your wallet to start trading</span>
           </div>
         </div>

@@ -31,7 +31,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
       <div className="relative bg-[#111] border border-[#222] p-6 w-full max-w-md mx-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-sm uppercase tracking-widest">Connect Wallet</h2>
+          <h2 className="text-[11px] uppercase tracking-widest">Connect Wallet</h2>
           <button 
             onClick={onClose}
             className="text-[#6b7280] hover:text-white transition-colors text-xl"
@@ -62,7 +62,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
               </svg>
             </div>
             <div>
-              <div className="text-sm uppercase tracking-wider">Ethereum Wallet</div>
+              <div className="text-[11px] uppercase tracking-wider">Ethereum Wallet</div>
               <div className="text-[10px] text-[#6b7280] uppercase tracking-wider mt-0.5">
                 MetaMask, Rainbow, etc.
               </div>
@@ -82,7 +82,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
               </svg>
             </div>
             <div>
-              <div className="text-sm uppercase tracking-wider text-[#6b7280]">Starknet Wallet</div>
+              <div className="text-[11px] uppercase tracking-wider text-[#6b7280]">Starknet Wallet</div>
               <div className="text-[10px] text-[#6b7280] uppercase tracking-wider mt-0.5">
                 Coming Soon
               </div>

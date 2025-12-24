@@ -17,7 +17,7 @@ export function PositionsTable({ positions, isConnected }: PositionsTableProps) 
       <div className="flex gap-6 px-4 border-b border-[#1f1f1f]">
         <button
           onClick={() => setActiveTab('positions')}
-          className={`py-3 text-sm uppercase tracking-wider border-b-2 transition-colors ${
+          className={`py-2 text-[10px] uppercase tracking-wider border-b-2 transition-colors ${
             activeTab === 'positions' 
               ? 'border-white text-white' 
               : 'border-transparent text-[#6b7280] hover:text-white'
@@ -27,7 +27,7 @@ export function PositionsTable({ positions, isConnected }: PositionsTableProps) 
         </button>
         <button
           onClick={() => setActiveTab('closed')}
-          className={`py-3 text-sm uppercase tracking-wider border-b-2 transition-colors ${
+          className={`py-2 text-[10px] uppercase tracking-wider border-b-2 transition-colors ${
             activeTab === 'closed' 
               ? 'border-white text-white' 
               : 'border-transparent text-[#6b7280] hover:text-white'
@@ -38,16 +38,16 @@ export function PositionsTable({ positions, isConnected }: PositionsTableProps) 
       </div>
 
       {/* Content */}
-      <div className="p-8">
+      <div className="px-4 py-3">
         {activeTab === 'positions' ? (
           <>
             {!isConnected ? (
-              <div className="flex items-center justify-center py-12 text-[#6b7280] text-sm">
+              <div className="flex items-center justify-center py-6 text-[#6b7280] text-[11px]">
                 Connect wallet to view positions
               </div>
             ) : positions.length === 0 ? (
-              <div className="flex items-center justify-center py-12 text-[#6b7280] text-sm">
-                No open arbitrage positions
+              <div className="flex items-center justify-center py-6 text-[#6b7280] text-[11px]">
+                No open positions
               </div>
             ) : (
               <table className="w-full">
@@ -64,7 +64,7 @@ export function PositionsTable({ positions, isConnected }: PositionsTableProps) 
                     <tr key={position.id} className="border-b border-[#1f1f1f]/50">
                       <td className="py-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm">{position.market}</span>
+                          <span className="text-[12px]">{position.market}</span>
                           <span className={`text-[10px] uppercase ${
                             position.side === 'LONG' ? 'text-[#00ff00]' : 'text-[#ff4444]'
                           }`}>
@@ -72,10 +72,10 @@ export function PositionsTable({ positions, isConnected }: PositionsTableProps) 
                           </span>
                         </div>
                       </td>
-                      <td className="py-4 text-right text-sm">
+                      <td className="py-4 text-right text-[12px]">
                         {position.size} <span className="text-[#6b7280]">{position.leverage}x</span>
                       </td>
-                      <td className="py-4 text-right text-sm">
+                      <td className="py-4 text-right text-[12px]">
                         ${position.entryPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="py-4 text-right">
@@ -90,7 +90,7 @@ export function PositionsTable({ positions, isConnected }: PositionsTableProps) 
             )}
           </>
         ) : (
-          <div className="flex items-center justify-center py-12 text-[#6b7280] text-sm">
+          <div className="flex items-center justify-center py-6 text-[#6b7280] text-[11px]">
             No closed positions
           </div>
         )}
