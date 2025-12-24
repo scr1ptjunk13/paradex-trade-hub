@@ -24,6 +24,7 @@ const FALLBACK_MARKETS: Market[] = [
     fundingRate: 0.1092,
     volume24h: "--",
     change24h: 0,
+    sizeIncrement: 0.00001,
   },
 ];
 
@@ -154,15 +155,24 @@ export default function Home() {
         }
 
         try {
+          // Round size to market's size increment
+          const increment = selectedMarket.sizeIncrement || 0.00001;
+          const roundedSize = Math.floor(size / increment) * increment;
+          
+          if (roundedSize <= 0) {
+            toast.error(`Size too small. Minimum increment is ${increment} ${selectedMarket.baseAsset}`);
+            throw new Error('Size too small');
+          }
+
           // Place real order via Paradex API
           await paradex.placeOrder({
             market: selectedMarket.symbol,
             side: side === 'LONG' ? 'BUY' : 'SELL',
             type: 'MARKET',
-            size: size.toString(),
+            size: roundedSize.toFixed(8).replace(/\.?0+$/, ''),
           });
 
-          toast.success(`${side} ${size} ${selectedMarket.baseAsset} order placed!`);
+          toast.success(`${side} ${roundedSize} ${selectedMarket.baseAsset} order placed!`);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Order failed';
           toast.error(message);

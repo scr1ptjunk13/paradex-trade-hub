@@ -7,6 +7,7 @@ export interface Market {
   fundingRate: number;
   volume24h: string;
   change24h: number;
+  sizeIncrement: number;
 }
 
 export interface Position {
