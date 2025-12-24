@@ -4,7 +4,7 @@ import { ReactNode, useState, useEffect } from "react";
 import { Toaster } from "sonner";
 import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider, cookieToInitialState } from "wagmi";
+import { WagmiProvider } from "wagmi";
 import { getConfig } from "@/lib/wagmi";
 import "@rainbow-me/rainbowkit/styles.css";
 
@@ -15,7 +15,7 @@ interface ProvidersProps {
   cookie?: string | null;
 }
 
-export function Providers({ children, cookie }: ProvidersProps) {
+export function Providers({ children }: ProvidersProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -28,10 +28,9 @@ export function Providers({ children, cookie }: ProvidersProps) {
   }
 
   const config = getConfig();
-  const initialState = cookieToInitialState(config, cookie);
   
   return (
-    <WagmiProvider config={config} initialState={initialState}>
+    <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
           theme={darkTheme({

@@ -1,14 +1,17 @@
 # Paradex Trade Hub
 
-A minimal, functional trading interface for Paradex perpetual futures exchange built with Next.js 14, RainbowKit, and the Paradex SDK.
+A minimal, functional trading interface for Paradex perpetual futures exchange built with Next.js 14, RainbowKit, and direct Paradex REST API integration with Starknet signing.
 
 ## Features
 
 - ✅ **Wallet Connection** - Connect EVM wallets (MetaMask, Rabby, etc.) via RainbowKit
-- ✅ **Real Markets** - Fetch and display live markets from Paradex testnet API
+- ✅ **Paradex Integration** - Full authentication with Starknet key signing
+- ✅ **Real Markets** - Fetch and display live markets from Paradex production API
+- ✅ **Live Market Data** - Real-time mark price, funding rate, and 24h volume
 - ✅ **Trading Panel** - Place market orders with position size and leverage controls
-- ✅ **Balance Display** - View available USDC balance from connected Paradex account
-- ✅ **Active Positions** - Real-time display of open positions with PnL
+- ✅ **Real Balance** - Fetch actual USDC balance from your Paradex account
+- ✅ **Real Positions** - Display actual open positions from Paradex API
+- ✅ **Real Trading** - Place actual market orders via signed API calls
 - ✅ **Error Handling** - Comprehensive validation and user-friendly error messages
 - ✅ **Loading States** - Clear feedback during wallet connection and order placement
 
@@ -17,7 +20,7 @@ A minimal, functional trading interface for Paradex perpetual futures exchange b
 - **Framework**: Next.js 14 (App Router)
 - **Styling**: TailwindCSS with custom trading UI components
 - **Wallet**: RainbowKit + Wagmi + viem
-- **Trading**: Paradex SDK (@paradex/sdk)
+- **Trading**: Direct Paradex REST API with Starknet signing (starknet.js)
 - **State**: React hooks with real-time data fetching
 - **Notifications**: Sonner for toast messages
 
@@ -27,16 +30,21 @@ Before you begin, ensure you have:
 
 1. **Node.js 18+** installed
 2. **An EVM wallet** (MetaMask, Rabby, etc.)
-3. **Testnet funds** - Your wallet needs:
-   - Sepolia ETH for gas fees
-   - A funded Paradex testnet account with USDC
+3. **A Paradex account** with funds:
+   - Visit https://app.paradex.trade/
+   - Connect your EVM wallet and complete onboarding
+   - Deposit USDC to your Paradex account
 
-### Getting Testnet Funds
+### Getting Your Paradex Credentials
 
-1. Get Sepolia ETH from a faucet: https://sepoliafaucet.com/
-2. Visit Paradex testnet: https://testnet.paradex.trade/
-3. Connect your wallet and onboard to create a Paradex account
-4. Use the testnet faucet to get USDC
+To trade via this app, you need your Paradex L2 credentials:
+
+1. Go to https://app.paradex.trade/
+2. Connect your wallet
+3. **Account Address**: Click your address (top right) to copy your L2 address
+4. **Private Key**: Go to Wallet → Click "Copy Private Key"
+
+⚠️ **Security Note**: Your private key is stored in memory only and never persisted. It is only sent to Paradex API for authentication.
 
 ## Setup Instructions
 
@@ -75,11 +83,15 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 1. Click "Connect Wallet" in the top right
 2. Select your wallet and approve the connection
-3. Wait for Paradex initialization (this derives your Starknet key pair)
-4. Select a market from the dropdown
-5. Enter position size and choose leverage
-6. Click "Long" or "Short" to place a market order
-7. View your active positions in the table below
+3. A modal will appear asking for your **Paradex credentials**:
+   - Enter your **Paradex Account Address** (L2)
+   - Enter your **Paradex Private Key** (L2)
+4. Click "Connect to Paradex" - this authenticates with Paradex API
+5. Your real USDC balance will appear
+6. Select a market from the dropdown
+7. Enter position size and choose leverage
+8. Click "Long" or "Short" to place a **real market order**
+9. View your actual positions in the table below
 
 ## Project Structure
 
@@ -103,7 +115,13 @@ paradex-trade-hub/
 │       └── dropdown-menu.tsx # Radix UI dropdown component
 ├── lib/
 │   ├── wagmi.ts             # Wagmi/RainbowKit configuration
-│   ├── paradex.ts           # Paradex SDK service wrapper
+│   ├── paradex.ts           # Paradex market data fetching
+│   ├── paradex/             # Full Paradex trading integration
+│   │   ├── api.ts           # REST API client (auth, orders, positions)
+│   │   ├── signature.ts     # Starknet order/auth signing
+│   │   ├── typedData.ts     # Typed data builders for signing
+│   │   ├── types.ts         # TypeScript interfaces
+│   │   └── useParadex.ts    # React hook for state management
 │   └── utils.ts             # Utility functions
 ├── types/
 │   └── trading.ts           # TypeScript interfaces
@@ -116,21 +134,24 @@ paradex-trade-hub/
 
 ### Paradex Integration
 
-The app uses the official Paradex SDK to:
+The app uses direct Paradex REST API calls with Starknet signing:
 
-1. **Initialize Account** - Derives Starknet key pair from Ethereum wallet signature
-2. **Fetch Markets** - Retrieves available trading pairs from REST API
-3. **Get Balance** - Fetches USDC balance using SDK's `getTokenBalance()`
-4. **Fetch Positions** - Retrieves open positions from REST API
-5. **Place Orders** - Submits market orders via REST API
+1. **Authentication** - Signs auth request with Starknet private key to get JWT token
+2. **Fetch Markets** - Retrieves available trading pairs from `/v1/markets`
+3. **Market Summary** - Fetches live price, funding, volume from `/v1/markets/summary`
+4. **Get Balance** - Fetches USDC balance from `/v1/balance`
+5. **Fetch Positions** - Retrieves open positions from `/v1/positions`
+6. **Place Orders** - Signs and submits orders to `/v1/orders`
 
-### Wallet Connection Flow
+### Authentication Flow
 
 1. User clicks "Connect Wallet" (RainbowKit)
-2. Wallet provider is passed to Paradex SDK
-3. SDK derives Starknet key pair (requires signature)
-4. App fetches balance and positions
-5. User can now trade
+2. After EVM wallet connects, Paradex auth modal appears
+3. User enters their Paradex L2 address and private key
+4. App signs auth request using starknet.js
+5. JWT token is obtained from Paradex API
+6. App fetches real balance and positions
+7. User can now place real trades
 
 ### Error Handling
 
@@ -164,32 +185,34 @@ For some operations (markets, positions), the Paradex SDK doesn't expose all end
 
 ### Assumptions Made
 
-1. **Testnet Only** - App connects to Paradex testnet (Sepolia)
+1. **Production API** - App connects to Paradex production (`api.prod.paradex.trade`)
 2. **USDC Balance** - Assumes user has USDC in their Paradex account
 3. **Market Orders Only** - No limit orders or advanced order types
-4. **Hardcoded Market Data** - Price, funding rate, volume are placeholders (not live)
+4. **User Provides Credentials** - User must provide their Paradex L2 private key
 5. **No Chart** - Chart component is a placeholder (TradingView integration not implemented)
 
 ## Known Limitations
 
-- Market prices are not live (would need WebSocket integration)
+- Market prices refresh on market selection (not real-time WebSocket)
 - No order book display
 - No trade history
 - No position management (close, modify)
 - No liquidation price calculation
 - Chart is a placeholder
+- User must manually enter Paradex credentials (no automatic key derivation)
 
 ## Troubleshooting
 
 ### "Failed to initialize Paradex account"
 
-- Ensure you're connected to Sepolia network
-- Check that you have Sepolia ETH for gas
+- Verify your Paradex account address is correct
+- Verify your Paradex private key is correct
+- Ensure your Paradex account exists (onboard at app.paradex.trade first)
 - Try disconnecting and reconnecting your wallet
 
 ### "Insufficient balance"
 
-- Visit https://testnet.paradex.trade/ to get testnet USDC
+- Visit https://app.paradex.trade/ to deposit USDC
 - Ensure your Paradex account is funded
 
 ### "Failed to place order"

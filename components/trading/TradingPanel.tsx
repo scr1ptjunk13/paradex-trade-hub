@@ -16,13 +16,19 @@ const MAX_LEVERAGE = 50;
 
 export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps) {
   const [size, setSize] = useState('');
+  const [sizeUnit, setSizeUnit] = useState<'USD' | 'BASE'>('BASE'); // BASE = BTC, ETH, etc.
   const [leverage, setLeverage] = useState(10);
   const [isLoading, setIsLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
 
   const sizeNum = parseFloat(size) || 0;
-  const notionalValue = sizeNum * market.price;
+  
+  // Convert size based on unit selection
+  const sizeInBase = sizeUnit === 'USD' ? sizeNum / market.price : sizeNum;
+  const sizeInUSD = sizeUnit === 'USD' ? sizeNum : sizeNum * market.price;
+  
+  const notionalValue = sizeInUSD;
   const requiredMargin = notionalValue / leverage;
 
   const validationError = useMemo(() => {
@@ -39,7 +45,8 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
     }
     setIsLoading(true);
     try {
-      await onPlaceOrder(side, sizeNum, leverage);
+      // Always pass size in base asset (BTC, ETH, etc.) to the order
+      await onPlaceOrder(side, sizeInBase, leverage);
       setSize('');
     } catch (error) {
       toast.error('Failed to place order');
@@ -105,7 +112,7 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
       {/* Position Size */}
       <div className="mb-6">
         <label className="text-[10px] text-[#6b7280] uppercase tracking-wider block mb-2">
-          Position Size
+          Size
         </label>
         <div className="relative">
           <input
@@ -113,14 +120,39 @@ export function TradingPanel({ market, wallet, onPlaceOrder }: TradingPanelProps
             value={size}
             onChange={handleSizeChange}
             placeholder="0.00"
-            className="w-full bg-[#0a0a0a] border border-[#222] px-3 py-2.5 text-sm placeholder:text-[#444] focus:outline-none focus:border-[#333]"
+            className="w-full bg-[#0a0a0a] border border-[#222] px-3 py-2.5 pr-24 text-sm placeholder:text-[#444] focus:outline-none focus:border-[#333]"
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#6b7280]">
-            {market.baseAsset}
+          {/* Unit Toggle */}
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex bg-[#1a1a1a] rounded overflow-hidden border border-[#333]">
+            <button
+              onClick={() => setSizeUnit('BASE')}
+              className={`px-2 py-1 text-[10px] font-medium transition-colors ${
+                sizeUnit === 'BASE' 
+                  ? 'bg-white text-black' 
+                  : 'text-[#6b7280] hover:text-white'
+              }`}
+            >
+              {market.baseAsset}
+            </button>
+            <button
+              onClick={() => setSizeUnit('USD')}
+              className={`px-2 py-1 text-[10px] font-medium transition-colors ${
+                sizeUnit === 'USD' 
+                  ? 'bg-white text-black' 
+                  : 'text-[#6b7280] hover:text-white'
+              }`}
+            >
+              USD
+            </button>
           </div>
         </div>
+        {/* Conversion display */}
         <div className="flex justify-between mt-2 text-[11px] text-[#6b7280]">
-          <span>≈ ${sizeNum > 0 ? notionalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span>
+          {sizeUnit === 'BASE' ? (
+            <span>≈ ${sizeInUSD > 0 ? sizeInUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'} USD</span>
+          ) : (
+            <span>≈ {sizeInBase > 0 ? sizeInBase.toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 }) : '0.000000'} {market.baseAsset}</span>
+          )}
         </div>
       </div>
 
