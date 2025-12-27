@@ -78,7 +78,7 @@ export default function Home() {
     market: p.market,
     side: p.side,
     size: parseFloat(p.size),
-    entryPrice: parseFloat(p.average_entry_price),
+    entryPrice: parseFloat(p.average_entry_price_usd),
     markPrice: parseFloat(p.average_entry_price), // Will be updated with live price
     pnl: parseFloat(p.unrealized_pnl),
     pnlPercent: 0, // Calculate if needed
