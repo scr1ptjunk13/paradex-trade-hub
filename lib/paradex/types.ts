@@ -19,7 +19,7 @@ export interface ParadexPosition {
   side: 'LONG' | 'SHORT';
   size: string;
   average_entry_price: string;
-  average_entry_price_usd: string;  // This is what Paradex UI displays
+  average_entry_price_usd: string;  // this is what paradex ui displays (not the average_entry_price_usd)
   unrealized_pnl: string;
   realized_pnl: string;
   leverage: string;

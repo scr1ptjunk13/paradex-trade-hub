@@ -23,6 +23,9 @@ export interface Position {
   pnl: number;
   pnlPercent: number;
   leverage: number;
+  //extra
+  liquidationPrice: number;
+  value: number;  // notional value in USD
 }
 
 export interface WalletState {

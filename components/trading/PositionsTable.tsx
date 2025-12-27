@@ -55,7 +55,9 @@ export function PositionsTable({ positions, isConnected }: PositionsTableProps) 
                   <tr className="border-b border-[#1f1f1f]">
                     <th className="text-left py-3 text-[12px] text-[#6b7280] uppercase tracking-wider font-normal">Market</th>
                     <th className="text-right py-3 text-[12px] text-[#6b7280] uppercase tracking-wider font-normal">Size</th>
+                    <th className="text-right py-3 text-[12px] text-[#6b7280] uppercase tracking-wider font-normal">Value</th>
                     <th className="text-right py-3 text-[12px] text-[#6b7280] uppercase tracking-wider font-normal">Entry</th>
+                    <th className="text-right py-3 text-[12px] text-[#6b7280] uppercase tracking-wider font-normal">Liq. Price</th>
                     <th className="text-right py-3 text-[12px] text-[#6b7280] uppercase tracking-wider font-normal">PnL</th>
                   </tr>
                 </thead>
@@ -76,7 +78,15 @@ export function PositionsTable({ positions, isConnected }: PositionsTableProps) 
                         {position.size} <span className="text-[#6b7280]">{position.leverage}x</span>
                       </td>
                       <td className="py-4 text-right text-[14px]">
+                        ${position.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                      <td className="py-4 text-right text-[14px]">
                         ${position.entryPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="py-4 text-right text-[14px] text-[#ff4444]">
+                        {position.liquidationPrice > 0 
+                          ? `$${position.liquidationPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+                          : '--'}
                       </td>
                       <td className="py-4 text-right">
                         <span className={position.pnl >= 0 ? 'text-[#00ff00]' : 'text-[#ff4444]'}>

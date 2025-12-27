@@ -73,17 +73,23 @@ export default function Home() {
   };
 
   // Convert Paradex positions to our Position type
-  const positions: Position[] = paradex.positions.map((p) => ({
-    id: p.id,
-    market: p.market,
-    side: p.side,
-    size: parseFloat(p.size),
-    entryPrice: parseFloat(p.average_entry_price_usd),
-    markPrice: parseFloat(p.average_entry_price), // Will be updated with live price
-    pnl: parseFloat(p.unrealized_pnl),
-    pnlPercent: 0, // Calculate if needed
-    leverage: parseFloat(p.leverage),
-  }));
+  const positions: Position[] = paradex.positions.map((p) => {
+    const size = parseFloat(p.size);
+    const entryPrice = parseFloat(p.average_entry_price_usd);
+    return {
+      id: p.id,
+      market: p.market,
+      side: p.side,
+      size,
+      entryPrice,
+      markPrice: parseFloat(p.average_entry_price),
+      pnl: parseFloat(p.unrealized_pnl),
+      pnlPercent: 0,
+      leverage: parseFloat(p.leverage),
+      liquidationPrice: parseFloat(p.liquidation_price) || 0,
+      value: Math.abs(size) * entryPrice,
+    };
+  });
 
   // Get wallet client for Paradex initialization
   const { data: walletClient } = useWalletClient();
